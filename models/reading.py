@@ -12,6 +12,6 @@ class Reading(SQLModel, table=True):
     pressure_psi: float
     temperature_c: float
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    oil_bpd: float = Field(sa_column=Float)        
-    gas_mscfd: float = Field(sa_column=Float)      
-    water_bpd: float = Field(sa_column=Float)      
+    oil_bpd: float = Field(sa_column=Float)   
+    gas_mscfd: float = Field(sa_column=Float)  
+    water_bpd: float = Field(sa_column=Float)
