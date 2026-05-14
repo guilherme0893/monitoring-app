@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 """Basic DTOs for the well entity, used for request validation and response formatting."""
 
+
 class WellCreate(BaseModel):
     """Payload expected when creating a new well."""
     name: str
@@ -43,4 +44,3 @@ class WellResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
-

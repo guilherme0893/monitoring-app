@@ -14,4 +14,3 @@ class WellRepository(BaseRepository[Well]):
     async def get_by_id(self, id: int) -> Optional[Well]:
         well = await self._session.get(Well, id)
         return well
-
