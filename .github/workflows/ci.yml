@@ -24,12 +24,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest httpx flake8
+          pip install fastapi sqlmodel asyncpg "httpx[asgi]" python-dotenv \
+                      pytest pytest-asyncio aiosqlite flake8
 
       - name: Lint with flake8
         run: |
           flake8 . --max-line-length=120 --exclude=.git,__pycache__
 
       - name: Run tests
-        run: pytest test_main.py -v
+        run: pytest tests/ -v
