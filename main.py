@@ -16,7 +16,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.get("/health")
-async def health_check():
+def health_check():
     return {"status": "ok"}
 
 app.include_router(wells)
+

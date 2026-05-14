@@ -1,4 +1,3 @@
-import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -71,5 +70,6 @@ class TestGetWellById:
         well = await _seed_well(session)
         response = await client.get(f"/wells/{well.id}")
         body = response.json()
-        for field in ("id", "name", "field_name", "latitude", "longitude", "depth_m", "status", "operator", "created_at"):
+        for field in (
+            "id", "name", "field_name", "latitude", "longitude", "depth_m", "status", "operator", "created_at"):
             assert field in body, f"Missing field: {field}"

@@ -1,7 +1,5 @@
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from models.well import Well
 from repositories.well_repository import WellRepository
 from services.well_service import WellService
