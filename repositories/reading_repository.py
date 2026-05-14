@@ -18,4 +18,3 @@ class ReadingRepository(BaseRepository[Reading]):
     async def get_readings_by_well(self, well_id: int) -> List[Reading]:
         readings = await self._session.execute(select(Reading).where(Reading.well_id == well_id))
         return readings.scalars().all()
-

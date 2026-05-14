@@ -23,7 +23,6 @@ def _make_reading(**kwargs) -> Reading:
 
 def _make_service(repo: ReadingRepository) -> ReadingService:
     return ReadingService(repo)
-
   
 class TestGetAll:
     async def test_returns_all_readings_from_repository(self):
@@ -37,6 +36,7 @@ class TestGetAll:
         repo.get_all.assert_awaited_once()
         assert result == readings
 
+
     async def test_returns_empty_list_when_no_readings(self):
         repo = MagicMock(spec=ReadingRepository)
         repo.get_all = AsyncMock(return_value=[])
@@ -45,6 +45,7 @@ class TestGetAll:
         result = await service.get_all()
 
         assert result == []
+
 
 class TestGetById:
     async def test_return_reading_when_found(self):
@@ -58,6 +59,7 @@ class TestGetById:
         repo.get_by_id.assert_awaited_once_with(42)
         assert result == reading
 
+
     async def test_return_none_when_not_found(self):
         repo = MagicMock(spec=ReadingRepository)
         repo.get_by_id = AsyncMock(return_value=None)
@@ -67,6 +69,7 @@ class TestGetById:
 
         repo.get_by_id.assert_awaited_once_with(999)
         assert result is None
+
 
 class TestGetReadingByWell:
     async def test_return_readings_for_well(self):
@@ -79,6 +82,7 @@ class TestGetReadingByWell:
 
         repo.get_readings_by_well.assert_awaited_once_with(10)
         assert result == readings
+
 
     async def test_return_empty_list_when_no_readings_for_well(self):
         repo = MagicMock(spec=ReadingRepository)

@@ -13,16 +13,13 @@ wells = APIRouter(
 )
 
 
-
 def get_well_service(session: AsyncSession = Depends(get_session)) -> WellService:
     return WellService(WellRepository(session))
-
 
 
 @wells.get("/", response_model=list[WellResponse])
 async def get_wells(service: WellService = Depends(get_well_service)):
     return await service.get_all()
-
 
 
 @wells.get("/{well_id}", response_model=WellResponse)

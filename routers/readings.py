@@ -15,9 +15,11 @@ readings = APIRouter(
 def get_reading_service(session: AsyncSession = Depends(get_session)) -> ReadingService:
     return ReadingService(ReadingRepository(session))
 
+
 @readings.get("/", response_model=list[ReadingResponse])
 async def get_readings(service: ReadingService = Depends(get_reading_service)):
     return await service.get_all()
+
 
 @readings.get("/{reading_id}", response_model=ReadingResponse)
 async def get_reading_by_id(reading_id: int, service: ReadingService = Depends(get_reading_service)):
@@ -25,6 +27,7 @@ async def get_reading_by_id(reading_id: int, service: ReadingService = Depends(g
     if not reading:
         raise HTTPException(status_code=404, detail="Reading not found")
     return reading
+
 
 @readings.get("/well/{well_id}", response_model=list[ReadingResponse])
 async def get_readings_by_well(well_id: int, service: ReadingService = Depends(get_reading_service)):
