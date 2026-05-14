@@ -76,12 +76,10 @@ class TestGetReadingById:
         assert body["gas_mscfd"] == READING_PAYLOAD["gas_mscfd"]
         assert body["water_bpd"] == READING_PAYLOAD["water_bpd"]
 
-
     async def test_returns_404_when_not_found(self, client: AsyncClient):
         response = await client.get("/readings/999999")
         assert response.status_code == 404
         assert response.json()["detail"] == "Reading not found"
-
 
     async def test_response_schema_has_required_fields(self, client: AsyncClient, session: AsyncSession):
         reading = await _seed_reading(session)
