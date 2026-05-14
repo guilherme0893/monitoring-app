@@ -6,6 +6,7 @@ from repositories.well_repository import WellRepository
 from schemas.well import WellResponse
 from services.well_service import WellService
 
+
 wells = APIRouter(
     prefix="/wells",
     tags=["wells"],
@@ -27,4 +28,3 @@ async def get_well_by_id(well_id: int, service: WellService = Depends(get_well_s
     if not well:
         raise HTTPException(status_code=404, detail="Well not found")
     return well
-
