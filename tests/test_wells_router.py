@@ -71,5 +71,14 @@ class TestGetWellById:
         response = await client.get(f"/wells/{well.id}")
         body = response.json()
         for field in (
-            "id", "name", "field_name", "latitude", "longitude", "depth_m", "status", "operator", "created_at"):
+            "id",
+            "name",
+            "field_name",
+            "latitude",
+            "longitude",
+            "depth_m",
+            "status",
+            "operator",
+            "created_at",
+        ):
             assert field in body, f"Missing field: {field}"
