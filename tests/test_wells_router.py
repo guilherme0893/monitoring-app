@@ -16,6 +16,7 @@ WELL_PAYLOAD = {
     "depth_m": 3500.0,
     "status": "active",
     "operator": "PetroCorp",
+    "type_id": 1,
 }
 
 

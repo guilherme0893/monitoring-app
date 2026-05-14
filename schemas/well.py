@@ -16,6 +16,7 @@ class WellCreate(BaseModel):
     status: str = "active"
     operator: str
     spud_date: Optional[datetime] = None
+    type_id: int
 
 
 class WellUpdate(BaseModel):
@@ -42,5 +43,6 @@ class WellResponse(BaseModel):
     operator: str
     spud_date: Optional[datetime]
     created_at: datetime
+    type_id: int
 
     model_config = {"from_attributes": True}

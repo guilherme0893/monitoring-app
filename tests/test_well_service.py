@@ -16,6 +16,7 @@ def _make_well(**kwargs) -> Well:
         status="active",
         operator="DrillCo",
         spud_date=None,
+        type_id=1,
     )
     defaults.update(kwargs)
     return Well(**defaults)
