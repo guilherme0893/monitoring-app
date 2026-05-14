@@ -34,4 +34,4 @@ def check_anomalies(readings: list[Reading]) -> list[ReadingResponse]:
             ))
 
     return anomalies
-  
+
