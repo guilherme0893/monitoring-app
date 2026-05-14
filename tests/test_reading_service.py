@@ -90,3 +90,15 @@ class TestGetReadingByWell:
 
         repo.get_readings_by_well.assert_awaited_once_with(999)
         assert result == []
+
+class TestGetAnomalies:
+    async def test_return_anomalies_for_well(self):
+        readings = [_make_reading(id=1, well_id=10), _make_reading(id=2, well_id=10, temperature_c=340)]
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_anomalies = AsyncMock(return_value=readings)
+        service = _make_service(repo)
+
+        result = await service.get_anomalies(10)
+
+        repo.get_anomalies.assert_awaited_once_with(10)
+        assert result == readings[1]
