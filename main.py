@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 from config.database import init_db
 
+from routers.wells import wells
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,7 +15,4 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World!"}
+app.include_router(wells)

@@ -3,7 +3,7 @@ from typing import Annotated, AsyncGenerator
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import SQLModel, Session
+from sqlmodel import SQLModel
 
 from dotenv import load_dotenv
 import os
@@ -32,6 +32,9 @@ async def init_db() -> None:
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency that yields a database session per request."""
     async with AsyncSessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            await session.close()
 
-SessionDep = Annotated[Session, Depends(get_session)]
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
