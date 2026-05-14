@@ -1,6 +1,5 @@
 from unittest.mock import AsyncMock, MagicMock
 
-
 from models.reading import Reading
 from repositories.reading_repository import ReadingRepository
 from services.reading_service import ReadingService
@@ -23,7 +22,8 @@ def _make_reading(**kwargs) -> Reading:
 
 def _make_service(repo: ReadingRepository) -> ReadingService:
     return ReadingService(repo)
-  
+
+
 class TestGetAll:
     async def test_returns_all_readings_from_repository(self):
         readings = [_make_reading(id=1), _make_reading(id=2, pressure_psi=3200.0)]
@@ -35,7 +35,6 @@ class TestGetAll:
 
         repo.get_all.assert_awaited_once()
         assert result == readings
-
 
     async def test_returns_empty_list_when_no_readings(self):
         repo = MagicMock(spec=ReadingRepository)
@@ -59,7 +58,6 @@ class TestGetById:
         repo.get_by_id.assert_awaited_once_with(42)
         assert result == reading
 
-
     async def test_return_none_when_not_found(self):
         repo = MagicMock(spec=ReadingRepository)
         repo.get_by_id = AsyncMock(return_value=None)
@@ -82,7 +80,6 @@ class TestGetReadingByWell:
 
         repo.get_readings_by_well.assert_awaited_once_with(10)
         assert result == readings
-
 
     async def test_return_empty_list_when_no_readings_for_well(self):
         repo = MagicMock(spec=ReadingRepository)

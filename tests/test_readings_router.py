@@ -23,6 +23,7 @@ async def _seed_well(session: AsyncSession) -> Well:
     await session.refresh(well)
     return well
 
+
 async def _seed_reading(session: AsyncSession) -> Reading:
     well = await _seed_well(session)
     reading = Reading(**READING_PAYLOAD, well_id=well.id)
@@ -55,8 +56,10 @@ class TestGetReadings:
         assert data[0]["gas_mscfd"] == READING_PAYLOAD["gas_mscfd"]
         assert data[0]["water_bpd"] == READING_PAYLOAD["water_bpd"]
 
+
 # ---------------------------------------------------------------------------
 # GET /read
+
 
 class TestGetReadingById:
     async def test_returns_reading_when_found(self, client: AsyncClient, session: AsyncSession):
@@ -73,10 +76,12 @@ class TestGetReadingById:
         assert body["gas_mscfd"] == READING_PAYLOAD["gas_mscfd"]
         assert body["water_bpd"] == READING_PAYLOAD["water_bpd"]
 
+
     async def test_returns_404_when_not_found(self, client: AsyncClient):
         response = await client.get("/readings/999999")
         assert response.status_code == 404
         assert response.json()["detail"] == "Reading not found"
+
 
     async def test_response_schema_has_required_fields(self, client: AsyncClient, session: AsyncSession):
         reading = await _seed_reading(session)

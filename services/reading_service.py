@@ -16,5 +16,5 @@ class ReadingService(BaseService[Reading]):
         return await self._repository.get_by_id(id)
 
     async def get_readings_by_well(self, well_id: int) -> list[Reading]:
-        return await self._repository.get_readings_by_well(well_id)        
+        return await self._repository.get_readings_by_well(well_id)
 

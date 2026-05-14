@@ -12,6 +12,7 @@ readings = APIRouter(
     tags=["readings"]
 )
 
+
 def get_reading_service(session: AsyncSession = Depends(get_session)) -> ReadingService:
     return ReadingService(ReadingRepository(session))
 
