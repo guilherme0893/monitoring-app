@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+from models.well_type import WellType
 
 
 class Well(SQLModel, table=True):
@@ -16,3 +18,6 @@ class Well(SQLModel, table=True):
     operator: str
     spud_date: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    type_id: int = Field(foreign_key="well_types.id")
+    type: Optional[WellType] = Relationship()
