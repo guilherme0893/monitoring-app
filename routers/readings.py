@@ -22,6 +22,14 @@ async def get_readings(service: ReadingService = Depends(get_reading_service)):
     return await service.get_all()
 
 
+@readings.get("/anomalies/{well_id}", response_model=list[ReadingResponse])
+async def get_anomalies(well_id: int, service: ReadingService = Depends(get_reading_service)):
+    anomalies = await service.get_anomalies(well_id)
+    if not anomalies:
+        raise HTTPException(status_code=404, detail="No anomalies found for this well")
+    return anomalies
+
+
 @readings.get("/{reading_id}", response_model=ReadingResponse)
 async def get_reading_by_id(reading_id: int, service: ReadingService = Depends(get_reading_service)):
     reading = await service.get_by_id(reading_id)
