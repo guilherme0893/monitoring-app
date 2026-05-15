@@ -22,3 +22,8 @@ class BaseService(ABC, Generic[T]):
     async def get_anomalies(self, well_id: int) -> list[T]:
         """Return a list of entities that are considered anomalies."""
         ...
+
+    async def get_anomalies_by_type(self, well_id: int) -> list[T]:
+        """Returns a list of entities that are considered anomalies, but filtered by the type of anomaly."""
+        ...
+        

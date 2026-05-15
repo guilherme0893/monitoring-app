@@ -34,3 +34,20 @@ def check_anomalies(readings: list[Reading]) -> list[ReadingResponse]:
             ))
 
     return anomalies
+
+ANOMALY_TYPE_THRESHOLDS: dict[str, tuple[str, float]] = {
+    "pressure_psi": ("pressure_psi", PRESSURE_PSI_THRESHOLD),
+    "temperature_c": ("temperature_c", TEMPERATURE_C_THRESHOLD),
+    "oil_bpd": ("oil_bpd", OIL_BPD_THRESHOLD),
+    "gas_mscfd": ("gas_mscfd", GAS_MSCFD_THRESHOLD),
+    "water_bpd": ("water_bpd", WATER_BPD_THRESHOLD),
+}
+
+
+def filter_anomalies_by_type(anomalies: list[ReadingResponse], anomaly_type: str) -> list[ReadingResponse]:
+    threshold_info = ANOMALY_TYPE_THRESHOLDS.get(anomaly_type)
+    if threshold_info is None:
+        return []
+
+    field, threshold = threshold_info
+    return [anomaly for anomaly in anomalies if getattr(anomaly, field) > threshold]
