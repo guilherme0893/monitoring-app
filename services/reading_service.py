@@ -1,6 +1,6 @@
 from typing import Optional
 
-from helper.anomaly import check_anomalies
+from helper.anomaly import check_anomalies, filter_anomalies_by_type
 from models.reading import Reading
 from repositories.reading_repository import ReadingRepository
 from schemas.reading import ReadingResponse
@@ -23,3 +23,7 @@ class ReadingService(BaseService[Reading]):
     async def get_anomalies(self, well_id: int) -> list[ReadingResponse]:
         readings = await self._repository.get_readings_by_well(well_id)
         return check_anomalies(readings)
+
+    async def filter_anomalies_by_type(self, well_id: int, anomaly_type: str) -> list[ReadingResponse]:
+        anomalies = await self.get_anomalies(well_id)
+        return filter_anomalies_by_type(anomalies, anomaly_type)
