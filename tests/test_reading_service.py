@@ -119,3 +119,95 @@ class TestGetAnomalies:
 
         repo.get_readings_by_well.assert_awaited_once_with(10)
         assert result == []
+
+    async def test_return_empty_when_no_readings_for_well(self):
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=[])
+        service = _make_service(repo)
+
+        result = await service.get_anomalies(999)
+
+        repo.get_readings_by_well.assert_awaited_once_with(999)
+        assert result == []
+
+    async def test_filter_anomalies_by_type(self):
+        readings = [
+            _make_reading(id=1, well_id=10, temperature_c=150.0),
+            _make_reading(id=2, well_id=10, pressure_psi=6000.0),
+            _make_reading(id=3, well_id=10, temperature_c=100.0),
+        ]
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=readings)
+        service = _make_service(repo)
+
+        result = await service.filter_anomalies_by_type(10, "temperature_c")
+
+        repo.get_readings_by_well.assert_awaited_once_with(10)
+        assert len(result) == 2
+        assert result[0].id == 1
+
+
+class TestFilterAnomaliesByType:
+    async def test_returns_only_readings_exceeding_specified_threshold(self):
+        readings = [
+            _make_reading(id=1, well_id=5, pressure_psi=6000.0),   # pressure anomaly
+            _make_reading(id=2, well_id=5, temperature_c=150.0),    # temperature anomaly
+            _make_reading(id=3, well_id=5),                         # normal
+        ]
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=readings)
+        service = _make_service(repo)
+
+        result = await service.filter_anomalies_by_type(5, "pressure_psi")
+
+        assert len(result) == 1
+        assert result[0].id == 1
+
+    async def test_returns_empty_for_unknown_anomaly_type(self):
+        readings = [_make_reading(id=1, well_id=5, pressure_psi=6000.0)]
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=readings)
+        service = _make_service(repo)
+
+        result = await service.filter_anomalies_by_type(5, "nonexistent_field")
+
+        assert result == []
+
+    async def test_returns_empty_when_no_readings_for_well(self):
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=[])
+        service = _make_service(repo)
+
+        result = await service.filter_anomalies_by_type(999, "pressure_psi")
+
+        repo.get_readings_by_well.assert_awaited_once_with(999)
+        assert result == []
+
+    async def test_returns_empty_when_no_reading_exceeds_requested_type(self):
+        # All readings are anomalous but only for temperature, not pressure
+        readings = [
+            _make_reading(id=1, well_id=5, temperature_c=150.0),
+            _make_reading(id=2, well_id=5, temperature_c=200.0),
+        ]
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=readings)
+        service = _make_service(repo)
+
+        result = await service.filter_anomalies_by_type(5, "pressure_psi")
+
+        assert result == []
+
+    async def test_returns_multiple_readings_for_same_type(self):
+        readings = [
+            _make_reading(id=1, well_id=5, pressure_psi=6000.0),
+            _make_reading(id=2, well_id=5, pressure_psi=7000.0),
+            _make_reading(id=3, well_id=5),  # normal
+        ]
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=readings)
+        service = _make_service(repo)
+
+        result = await service.filter_anomalies_by_type(5, "pressure_psi")
+
+        assert len(result) == 2
+        assert {r.id for r in result} == {1, 2}

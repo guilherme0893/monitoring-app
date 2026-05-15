@@ -163,3 +163,97 @@ class TestGetAnomalies:
         response = await client.get("/readings/anomalies/999999")
         assert response.status_code == 404
         assert response.json()["detail"] == "No anomalies found for this well"
+
+    async def test_response_schema_has_required_fields(self, client: AsyncClient, session: AsyncSession):
+        reading = await _seed_anomalous_reading(session)
+        response = await client.get(f"/readings/anomalies/{reading.well_id}")
+        body = response.json()[0]
+        for field in (
+            "id",
+            "timestamp",
+            "pressure_psi",
+            "temperature_c",
+            "oil_bpd",
+            "gas_mscfd",
+            "water_bpd",
+            "well_id",
+        ):
+            assert field in body, f"Missing field: {field}"
+    
+    async def test_returns_404_when_no_anomalies_of_type_for_well(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        anomalous_reading = Reading(
+            **{**READING_PAYLOAD, "temperature_c": 150.0},
+            well_id=well.id,
+        )
+        session.add(anomalous_reading)
+        await session.commit()
+        response = await client.get(f"/readings/anomalies/{well.id}/pressure_psi")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "No anomalies found for this well and anomaly type"
+
+
+# ---------------------------------------------------------------------------
+# GET /readings/anomalies/{well_id}/{anomaly_type}
+# ---------------------------------------------------------------------------
+
+class TestGetAnomaliesByType:
+    async def test_returns_anomalies_for_matching_type(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        # temperature anomaly only (pressure normal)
+        session.add(Reading(**{**READING_PAYLOAD, "temperature_c": 150.0, "pressure_psi": 100.0}, well_id=well.id))
+        # pressure anomaly only (temperature normal)
+        session.add(Reading(**{**READING_PAYLOAD, "pressure_psi": 6000.0, "temperature_c": 50.0}, well_id=well.id))
+        await session.commit()
+
+        response = await client.get(f"/readings/anomalies/{well.id}/temperature_c")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["temperature_c"] == 150.0
+
+    async def test_excludes_anomalies_of_other_types(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        # pressure anomaly only — temperature is normal
+        session.add(Reading(**{**READING_PAYLOAD, "pressure_psi": 6000.0, "temperature_c": 50.0}, well_id=well.id))
+        await session.commit()
+
+        response = await client.get(f"/readings/anomalies/{well.id}/temperature_c")
+
+        assert response.status_code == 404
+
+    async def test_returns_422_for_unknown_anomaly_type(self, client: AsyncClient, session: AsyncSession):
+        reading = await _seed_anomalous_reading(session)
+
+        response = await client.get(f"/readings/anomalies/{reading.well_id}/nonexistent_field")
+
+        assert response.status_code == 422
+
+    async def test_returns_404_when_well_has_no_readings(self, client: AsyncClient):
+        response = await client.get("/readings/anomalies/999999/pressure_psi")
+        assert response.status_code == 404
+
+    async def test_returns_multiple_readings_of_same_type(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        session.add(Reading(**{**READING_PAYLOAD, "pressure_psi": 6000.0}, well_id=well.id))
+        session.add(Reading(**{**READING_PAYLOAD, "pressure_psi": 7500.0}, well_id=well.id))
+        await session.commit()
+
+        response = await client.get(f"/readings/anomalies/{well.id}/pressure_psi")
+
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+
+    async def test_response_schema_has_required_fields(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        session.add(Reading(**{**READING_PAYLOAD, "pressure_psi": 6000.0}, well_id=well.id))
+        await session.commit()
+
+        response = await client.get(f"/readings/anomalies/{well.id}/pressure_psi")
+
+        assert response.status_code == 200
+        body = response.json()[0]
+        for field in ("id", "well_id", "timestamp", "pressure_psi", "temperature_c",
+                      "oil_bpd", "gas_mscfd", "water_bpd", "created_at"):
+            assert field in body, f"Missing field: {field}"
