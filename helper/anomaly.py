@@ -35,6 +35,7 @@ def check_anomalies(readings: list[Reading]) -> list[ReadingResponse]:
 
     return anomalies
 
+
 ANOMALY_TYPE_THRESHOLDS: dict[str, tuple[str, float]] = {
     "pressure_psi": ("pressure_psi", PRESSURE_PSI_THRESHOLD),
     "temperature_c": ("temperature_c", TEMPERATURE_C_THRESHOLD),

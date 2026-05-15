@@ -179,7 +179,7 @@ class TestGetAnomalies:
             "well_id",
         ):
             assert field in body, f"Missing field: {field}"
-    
+
     async def test_returns_404_when_no_anomalies_of_type_for_well(self, client: AsyncClient, session: AsyncSession):
         well = await _seed_well(session)
         anomalous_reading = Reading(
