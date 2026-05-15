@@ -28,10 +28,10 @@ async def get_readings(service: ReadingService = Depends(get_reading_service)):
 
 @readings.get("/anomalies/{well_id}/{anomaly_type}", response_model=list[ReadingResponse])
 async def filter_anomalies_by_type(
-    well_id: int, 
-    anomaly_type: AnomalyType, 
+    well_id: int,
+    anomaly_type: AnomalyType,
     service: ReadingService = Depends(get_reading_service)
-    ):
+):
     anomalies = await service.filter_anomalies_by_type(well_id, anomaly_type)
     if not anomalies:
         raise HTTPException(status_code=404, detail="No anomalies found for this well and anomaly type")
