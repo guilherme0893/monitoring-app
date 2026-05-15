@@ -119,4 +119,3 @@ class TestGetAnomalies:
 
         repo.get_readings_by_well.assert_awaited_once_with(10)
         assert result == []
-

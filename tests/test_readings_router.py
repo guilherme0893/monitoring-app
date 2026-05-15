@@ -120,6 +120,7 @@ class TestGetReadingsByWell:
 # GET /readings/anomalies/{well_id}
 # ---------------------------------------------------------------------------
 
+
 ANOMALOUS_READING_PAYLOAD = {
     **READING_PAYLOAD,
     "temperature_c": 340.0,
