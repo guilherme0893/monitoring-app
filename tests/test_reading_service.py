@@ -112,10 +112,11 @@ class TestGetAnomalies:
         ]
         repo = MagicMock(spec=ReadingRepository)
         repo.get_readings_by_well = AsyncMock(return_value=readings)
-        
+
         service = _make_service(repo)
 
         result = await service.get_anomalies(10)
 
         repo.get_readings_by_well.assert_awaited_once_with(10)
         assert result == []
+
