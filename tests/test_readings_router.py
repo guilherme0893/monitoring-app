@@ -101,6 +101,7 @@ class TestGetReadingById:
 # GET /readings/well/{well_id}
 # ---------------------------------------------------------------------------
 
+
 class TestGetReadingsByWell:
     async def test_returns_readings_for_well(self, client: AsyncClient, session: AsyncSession):
         reading = await _seed_reading(session)
@@ -124,6 +125,7 @@ ANOMALOUS_READING_PAYLOAD = {
     "temperature_c": 340.0,
 }
 
+
 async def _seed_anomalous_reading(session: AsyncSession) -> Reading:
     well = await _seed_well(session)
     reading = Reading(**ANOMALOUS_READING_PAYLOAD, well_id=well.id)
@@ -131,6 +133,7 @@ async def _seed_anomalous_reading(session: AsyncSession) -> Reading:
     await session.commit()
     await session.refresh(reading)
     return reading
+
 
 class TestGetAnomalies:
     async def test_returns_anomalies_for_well(self, client: AsyncClient, session: AsyncSession):
@@ -143,18 +146,18 @@ class TestGetAnomalies:
         assert data[0]["temperature_c"] == ANOMALOUS_READING_PAYLOAD["temperature_c"]
 
     async def test_returns_404_when_no_anomalies_for_well(self, client: AsyncClient, session: AsyncSession):
-            well = await _seed_well(session)
-            # seed a normal
-            normal_reading = Reading(
-                **{**READING_PAYLOAD, "temperature_c": 50.0},
-                well_id=well.id,
-            )
-            session.add(normal_reading)
-            await session.commit()
-            response = await client.get(f"/readings/anomalies/{well.id}")
-            assert response.status_code == 404
-            assert response.json()["detail"] == "No anomalies found for this well"
-            
+        well = await _seed_well(session)
+        # seed a normal
+        normal_reading = Reading(
+            **{**READING_PAYLOAD, "temperature_c": 50.0},
+            well_id=well.id,
+        )
+        session.add(normal_reading)
+        await session.commit()
+        response = await client.get(f"/readings/anomalies/{well.id}")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "No anomalies found for this well"
+
     async def test_returns_404_when_well_has_no_readings(self, client: AsyncClient):
         response = await client.get("/readings/anomalies/999999")
         assert response.status_code == 404
