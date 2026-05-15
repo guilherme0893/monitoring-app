@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock
 
+from helper.anomaly import check_anomalies
 from models.reading import Reading
 from repositories.reading_repository import ReadingRepository
 from services.reading_service import ReadingService
@@ -95,10 +96,25 @@ class TestGetAnomalies:
     async def test_return_anomalies_for_well(self):
         readings = [_make_reading(id=1, well_id=10), _make_reading(id=2, well_id=10, temperature_c=340)]
         repo = MagicMock(spec=ReadingRepository)
-        repo.get_anomalies = AsyncMock(return_value=readings)
+        repo.get_readings_by_well = AsyncMock(return_value=readings)
         service = _make_service(repo)
 
         result = await service.get_anomalies(10)
 
-        repo.get_anomalies.assert_awaited_once_with(10)
-        assert result == readings[1]
+        repo.get_readings_by_well.assert_awaited_once_with(10)
+        assert result == check_anomalies(readings) 
+
+    async def test_return_empty_when_no_anomalies_for_well(self):
+        readings = [
+            _make_reading(id=1, well_id=10, temperature_c=100.0),
+            _make_reading(id=2, well_id=10, temperature_c=100.0),
+        ]
+        repo = MagicMock(spec=ReadingRepository)
+        repo.get_readings_by_well = AsyncMock(return_value=readings)
+        
+        service = _make_service(repo)
+        
+        result = await service.get_anomalies(10)
+        
+        repo.get_readings_by_well.assert_awaited_once_with(10)
+        assert result == []
