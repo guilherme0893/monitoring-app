@@ -1,4 +1,4 @@
-import io
+﻿import io
 from datetime import datetime
 
 import openpyxl
@@ -9,7 +9,7 @@ from models.reading import Reading
 from models.well import Well
 from tests.test_wells_router import WELL_PAYLOAD
 
-# temperature_c=150 exceeds the 120 °C threshold → always flagged as anomalous
+# temperature_c=150 exceeds the 120 Â°C threshold â†’ always flagged as anomalous
 ANOMALOUS_READING_PAYLOAD = {
     "timestamp": datetime(2024, 1, 1, 0, 0, 0),
     "pressure_psi": 3000.0,
@@ -19,7 +19,7 @@ ANOMALOUS_READING_PAYLOAD = {
     "water_bpd": 100.0,
 }
 
-# All values below every threshold → never flagged as anomalous
+# All values below every threshold â†’ never flagged as anomalous
 NORMAL_READING_PAYLOAD = {
     "timestamp": datetime(2024, 1, 1, 0, 0, 0),
     "pressure_psi": 100.0,
@@ -75,20 +75,20 @@ class TestGetExportAnomalies:
         assert ws.title == f"Anomalies - Well {reading.well_id}"
         rows = list(ws.iter_rows(values_only=True))
         assert rows[0] == (
-            "id", 
-            "well_id", 
-            "timestamp", 
-            "pressure_psi", 
-            "temperature_c", 
-            "oil_bpd", 
-            "gas_mscfd", 
-            "water_bpd", 
+            "id",
+            "well_id",
+            "timestamp",
+            "pressure_psi",
+            "temperature_c",
+            "oil_bpd",
+            "gas_mscfd",
+            "water_bpd",
             "created_at"
         )
         assert len(rows) == 2  # header + 1 data row
 
     async def test_returns_204_when_no_readings(self, client: AsyncClient, session: AsyncSession):
-        """Well exists but has no readings at all → no anomalies → 204 with detail header."""
+        """Well exists but has no readings at all â†’ no anomalies â†’ 204 with detail header."""
         well = await _seed_well(session)
 
         response = await client.get(f"/xlsx/anomalies/{well.id}")
@@ -98,7 +98,7 @@ class TestGetExportAnomalies:
         assert not response.content
 
     async def test_returns_204_when_readings_are_not_anomalous(self, client: AsyncClient, session: AsyncSession):
-        """Well has readings but none exceed any threshold → no anomalies → 204 with detail header."""
+        """Well has readings but none exceed any threshold â†’ no anomalies â†’ 204 with detail header."""
         reading = await _seed_normal_reading(session)
 
         response = await client.get(f"/xlsx/anomalies/{reading.well_id}")
@@ -108,7 +108,7 @@ class TestGetExportAnomalies:
         assert not response.content
 
     async def test_returns_404_when_well_does_not_exist(self, client: AsyncClient, session: AsyncSession):
-        """well_id does not exist in the database → 404."""
+        """well_id does not exist in the database â†’ 404."""
         response = await client.get("/xlsx/anomalies/99999")
 
         assert response.status_code == 404

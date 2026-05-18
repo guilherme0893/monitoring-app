@@ -1,4 +1,4 @@
-import io
+﻿import io
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 
@@ -33,12 +33,12 @@ class TestExportAnomaliesAsXLSX:
         anomalies = [
             _make_response(id=1, timestamp=datetime(2024, 1, 1, tzinfo=timezone.utc)),
             _make_response(
-                id=2, 
-                timestamp=datetime(2024, 1, 2, tzinfo=timezone.utc), 
-                pressure_psi=3200.0, 
-                temperature_c=160.0, 
-                oil_bpd=600.0, 
-                gas_mscfd=2500.0, 
+                id=2,
+                timestamp=datetime(2024, 1, 2, tzinfo=timezone.utc),
+                pressure_psi=3200.0,
+                temperature_c=160.0,
+                oil_bpd=600.0,
+                gas_mscfd=2500.0,
                 water_bpd=150.0
             ),
         ]
@@ -57,14 +57,14 @@ class TestExportAnomaliesAsXLSX:
         assert ws.title == "Anomalies - Well 1"
         rows = list(ws.iter_rows(values_only=True))
         assert rows[0] == (
-            "id", 
-            "well_id", 
-            "timestamp", 
-            "pressure_psi", 
-            "temperature_c", 
-            "oil_bpd", 
-            "gas_mscfd", 
-            "water_bpd", 
+            "id",
+            "well_id",
+            "timestamp",
+            "pressure_psi",
+            "temperature_c",
+            "oil_bpd",
+            "gas_mscfd",
+            "water_bpd",
             "created_at"
         )
         assert len(rows) == 3
