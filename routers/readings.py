@@ -1,12 +1,15 @@
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.database import get_session
 from repositories.reading_repository import ReadingRepository
+from repositories.well_repository import WellRepository
 from schemas.reading import ReadingResponse
 from services.reading_service import ReadingService
+from services.well_service import WellService
 
 AnomalyType = Literal["pressure_psi", "temperature_c", "oil_bpd", "gas_mscfd", "water_bpd"]
 
@@ -21,6 +24,10 @@ def get_reading_service(session: AsyncSession = Depends(get_session)) -> Reading
     return ReadingService(ReadingRepository(session))
 
 
+def get_well_service(session: AsyncSession = Depends(get_session)) -> WellService:
+    return WellService(WellRepository(session))
+
+
 @readings.get("/", response_model=list[ReadingResponse])
 async def get_readings(service: ReadingService = Depends(get_reading_service)):
     return await service.get_all()
@@ -30,19 +37,34 @@ async def get_readings(service: ReadingService = Depends(get_reading_service)):
 async def filter_anomalies_by_type(
     well_id: int,
     anomaly_type: AnomalyType,
-    service: ReadingService = Depends(get_reading_service)
+    service: ReadingService = Depends(get_reading_service),
+    well_service: WellService = Depends(get_well_service),
 ):
+    if not await well_service.get_by_id(well_id):
+        raise HTTPException(status_code=404, detail="Well not found")
     anomalies = await service.filter_anomalies_by_type(well_id, anomaly_type)
     if not anomalies:
-        raise HTTPException(status_code=404, detail="No anomalies found for this well and anomaly type")
+        return Response(
+            status_code=204,
+            headers={"X-Detail": "No anomalies found for this well and anomaly type"},
+        )
     return anomalies
 
 
 @readings.get("/anomalies/{well_id}", response_model=list[ReadingResponse])
-async def get_anomalies(well_id: int, service: ReadingService = Depends(get_reading_service)):
+async def get_anomalies(
+    well_id: int,
+    service: ReadingService = Depends(get_reading_service),
+    well_service: WellService = Depends(get_well_service),
+):
+    if not await well_service.get_by_id(well_id):
+        raise HTTPException(status_code=404, detail="Well not found")
     anomalies = await service.get_anomalies(well_id)
     if not anomalies:
-        raise HTTPException(status_code=404, detail="No anomalies found for this well")
+        return Response(
+            status_code=204,
+            headers={"X-Detail": "No anomalies found for this well"},
+        )
     return anomalies
 
 
@@ -55,8 +77,17 @@ async def get_reading_by_id(reading_id: int, service: ReadingService = Depends(g
 
 
 @readings.get("/well/{well_id}", response_model=list[ReadingResponse])
-async def get_readings_by_well(well_id: int, service: ReadingService = Depends(get_reading_service)):
-    readings = await service.get_readings_by_well(well_id)
-    if not readings:
-        raise HTTPException(status_code=404, detail="No readings found for this well")
-    return readings
+async def get_readings_by_well(
+    well_id: int,
+    service: ReadingService = Depends(get_reading_service),
+    well_service: WellService = Depends(get_well_service),
+):
+    if not await well_service.get_by_id(well_id):
+        raise HTTPException(status_code=404, detail="Well not found")
+    well_readings = await service.get_readings_by_well(well_id)
+    if not well_readings:
+        return Response(
+            status_code=204,
+            headers={"X-Detail": "No readings found for this well"},
+        )
+    return well_readings
