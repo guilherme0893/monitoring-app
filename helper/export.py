@@ -10,7 +10,18 @@ def export_as_xlsx(anomalies: list, well_id: int) -> io.BytesIO:
     ws = wb.active
     ws.title = f"Anomalies - Well {well_id}"
 
-    headers = ["id", "well_id", "timestamp", "pressure_psi", "temperature_c", "oil_bpd", "gas_mscfd", "water_bpd", "created_at"]
+    headers = [
+        "id", 
+        "well_id", 
+        "timestamp", 
+        "pressure_psi", 
+        "temperature_c", 
+        "oil_bpd", 
+        "gas_mscfd", 
+        "water_bpd", 
+        "created_at"
+    ]
+    
     ws.append(headers)
 
     for r in anomalies:

@@ -32,7 +32,15 @@ class TestExportAnomaliesAsXLSX:
     async def test_returns_xlsx_with_anomalies(self):
         anomalies = [
             _make_response(id=1, timestamp=datetime(2024, 1, 1, tzinfo=timezone.utc)),
-            _make_response(id=2, timestamp=datetime(2024, 1, 2, tzinfo=timezone.utc), pressure_psi=3200.0, temperature_c=160.0, oil_bpd=600.0, gas_mscfd=2500.0, water_bpd=150.0),
+            _make_response(
+                id=2, 
+                timestamp=datetime(2024, 1, 2, tzinfo=timezone.utc), 
+                pressure_psi=3200.0, 
+                temperature_c=160.0, 
+                oil_bpd=600.0, 
+                gas_mscfd=2500.0, 
+                water_bpd=150.0
+            ),
         ]
         reading_service = MagicMock(spec=ReadingService)
         reading_service.get_anomalies = AsyncMock(return_value=anomalies)
@@ -48,7 +56,17 @@ class TestExportAnomaliesAsXLSX:
         ws = wb.active
         assert ws.title == "Anomalies - Well 1"
         rows = list(ws.iter_rows(values_only=True))
-        assert rows[0] == ("id", "well_id", "timestamp", "pressure_psi", "temperature_c", "oil_bpd", "gas_mscfd", "water_bpd", "created_at")
+        assert rows[0] == (
+            "id", 
+            "well_id", 
+            "timestamp", 
+            "pressure_psi", 
+            "temperature_c", 
+            "oil_bpd", 
+            "gas_mscfd", 
+            "water_bpd", 
+            "created_at"
+        )
         assert len(rows) == 3
 
     async def test_returns_empty_xlsx_when_no_anomalies(self):

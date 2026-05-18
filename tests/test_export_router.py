@@ -74,7 +74,17 @@ class TestGetExportAnomalies:
         ws = wb.active
         assert ws.title == f"Anomalies - Well {reading.well_id}"
         rows = list(ws.iter_rows(values_only=True))
-        assert rows[0] == ("id", "well_id", "timestamp", "pressure_psi", "temperature_c", "oil_bpd", "gas_mscfd", "water_bpd", "created_at")
+        assert rows[0] == (
+            "id", 
+            "well_id", 
+            "timestamp", 
+            "pressure_psi", 
+            "temperature_c", 
+            "oil_bpd", 
+            "gas_mscfd", 
+            "water_bpd", 
+            "created_at"
+        )
         assert len(rows) == 2  # header + 1 data row
 
     async def test_returns_204_when_no_readings(self, client: AsyncClient, session: AsyncSession):
