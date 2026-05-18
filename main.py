@@ -7,6 +7,7 @@ from seed import seed
 
 from routers.wells import wells
 from routers.readings import readings
+from routers.export import export
 
 
 @asynccontextmanager
@@ -26,3 +27,4 @@ def health_check():
 
 app.include_router(wells)
 app.include_router(readings)
+app.include_router(export)

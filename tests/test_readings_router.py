@@ -111,10 +111,17 @@ class TestGetReadingsByWell:
         assert len(data) >= 1
         assert data[0]["well_id"] == reading.well_id
 
-    async def test_returns_404_when_no_readings_for_well(self, client: AsyncClient):
-        response = await client.get("/readings/well/1000")
+    async def test_returns_404_when_well_does_not_exist(self, client: AsyncClient):
+        response = await client.get("/readings/well/999999")
         assert response.status_code == 404
-        assert response.json()["detail"] == "No readings found for this well"
+        assert response.json()["detail"] == "Well not found"
+
+    async def test_returns_204_when_well_has_no_readings(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        response = await client.get(f"/readings/well/{well.id}")
+        assert response.status_code == 204
+        assert response.headers["x-detail"] == "No readings found for this well"
+        assert not response.content
 
 # ---------------------------------------------------------------------------
 # GET /readings/anomalies/{well_id}
@@ -146,9 +153,8 @@ class TestGetAnomalies:
         assert data[0]["well_id"] == reading.well_id
         assert data[0]["temperature_c"] == ANOMALOUS_READING_PAYLOAD["temperature_c"]
 
-    async def test_returns_404_when_no_anomalies_for_well(self, client: AsyncClient, session: AsyncSession):
+    async def test_returns_204_when_readings_are_not_anomalous(self, client: AsyncClient, session: AsyncSession):
         well = await _seed_well(session)
-        # seed a normal
         normal_reading = Reading(
             **{**READING_PAYLOAD, "temperature_c": 50.0},
             well_id=well.id,
@@ -156,13 +162,21 @@ class TestGetAnomalies:
         session.add(normal_reading)
         await session.commit()
         response = await client.get(f"/readings/anomalies/{well.id}")
-        assert response.status_code == 404
-        assert response.json()["detail"] == "No anomalies found for this well"
+        assert response.status_code == 204
+        assert response.headers["x-detail"] == "No anomalies found for this well"
+        assert not response.content
 
-    async def test_returns_404_when_well_has_no_readings(self, client: AsyncClient):
+    async def test_returns_404_when_well_does_not_exist(self, client: AsyncClient):
         response = await client.get("/readings/anomalies/999999")
         assert response.status_code == 404
-        assert response.json()["detail"] == "No anomalies found for this well"
+        assert response.json()["detail"] == "Well not found"
+
+    async def test_returns_204_when_well_has_no_readings(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        response = await client.get(f"/readings/anomalies/{well.id}")
+        assert response.status_code == 204
+        assert response.headers["x-detail"] == "No anomalies found for this well"
+        assert not response.content
 
     async def test_response_schema_has_required_fields(self, client: AsyncClient, session: AsyncSession):
         reading = await _seed_anomalous_reading(session)
@@ -180,17 +194,15 @@ class TestGetAnomalies:
         ):
             assert field in body, f"Missing field: {field}"
 
-    async def test_returns_404_when_no_anomalies_of_type_for_well(self, client: AsyncClient, session: AsyncSession):
+    async def test_returns_204_when_no_anomalies_of_requested_type(self, client: AsyncClient, session: AsyncSession):
+        """Well has a temperature anomaly but we ask for pressure_psi → 204."""
         well = await _seed_well(session)
-        anomalous_reading = Reading(
-            **{**READING_PAYLOAD, "temperature_c": 150.0},
-            well_id=well.id,
-        )
-        session.add(anomalous_reading)
+        session.add(Reading(**{**READING_PAYLOAD, "temperature_c": 150.0}, well_id=well.id))
         await session.commit()
         response = await client.get(f"/readings/anomalies/{well.id}/pressure_psi")
-        assert response.status_code == 404
-        assert response.json()["detail"] == "No anomalies found for this well and anomaly type"
+        assert response.status_code == 204
+        assert response.headers["x-detail"] == "No anomalies found for this well and anomaly type"
+        assert not response.content
 
 
 # ---------------------------------------------------------------------------
@@ -214,14 +226,16 @@ class TestGetAnomaliesByType:
         assert data[0]["temperature_c"] == 150.0
 
     async def test_excludes_anomalies_of_other_types(self, client: AsyncClient, session: AsyncSession):
+        """Pressure anomaly present but temperature requested → 204, not 404."""
         well = await _seed_well(session)
-        # pressure anomaly only — temperature is normal
         session.add(Reading(**{**READING_PAYLOAD, "pressure_psi": 6000.0, "temperature_c": 50.0}, well_id=well.id))
         await session.commit()
 
         response = await client.get(f"/readings/anomalies/{well.id}/temperature_c")
 
-        assert response.status_code == 404
+        assert response.status_code == 204
+        assert response.headers["x-detail"] == "No anomalies found for this well and anomaly type"
+        assert not response.content
 
     async def test_returns_422_for_unknown_anomaly_type(self, client: AsyncClient, session: AsyncSession):
         reading = await _seed_anomalous_reading(session)
@@ -230,9 +244,17 @@ class TestGetAnomaliesByType:
 
         assert response.status_code == 422
 
-    async def test_returns_404_when_well_has_no_readings(self, client: AsyncClient):
+    async def test_returns_404_when_well_does_not_exist(self, client: AsyncClient):
         response = await client.get("/readings/anomalies/999999/pressure_psi")
         assert response.status_code == 404
+        assert response.json()["detail"] == "Well not found"
+
+    async def test_returns_204_when_well_has_no_readings(self, client: AsyncClient, session: AsyncSession):
+        well = await _seed_well(session)
+        response = await client.get(f"/readings/anomalies/{well.id}/pressure_psi")
+        assert response.status_code == 204
+        assert response.headers["x-detail"] == "No anomalies found for this well and anomaly type"
+        assert not response.content
 
     async def test_returns_multiple_readings_of_same_type(self, client: AsyncClient, session: AsyncSession):
         well = await _seed_well(session)
